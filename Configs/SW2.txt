@@ -1,0 +1,37 @@
+enable
+configure terminal
+hostname SW2
+line con 0
+password admin
+login
+enable secret admin
+service password-encryption
+no ip domain lookup
+ip domain name ospf.local
+username admin secret admin
+crypto key generate rsa
+2048
+line vty 0 4
+transport input ssh
+login local
+exit
+vlan 2
+name LAN_2
+exit
+interface Ethernet0/0
+description Trunk Link to R2
+switchport trunk encapsulation dot1q
+switchport trunk allowed vlan 2
+switchport mode trunk
+no shutdown
+interface Ethernet0/1
+description Access Link to LAN_2
+switchport access vlan 2
+switchport mode access
+no shutdown
+interface Ethernet0/2
+no shutdown
+interface Ethernet0/3
+no shutdown
+exit
+do copy running-config startup-config

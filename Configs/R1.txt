@@ -1,0 +1,75 @@
+enable
+configure terminal
+hostname R2
+enable secret admin
+line console 0
+password admin
+login
+exit
+no ip domain lookup
+ip domain name ospf.local
+username admin secret admin
+crypto key generate rsa
+2048
+line vty 0 4
+transport input ssh
+login local
+exit
+interface Ethernet0/0
+description Link to R1
+ip address 10.1.1.6 255.255.255.252
+ip nat inside
+ip ospf 10 area 0
+no shutdwon
+interface Ethernet0/1
+description Link to R3
+ip address 10.1.1.9 255.255.255.252
+ip nat inside
+ip ospf 10 area 0
+no shutdown
+interface Ethernet0/2
+description Link to SW2
+ip nat inside
+no shutdown
+interface Ethernet0/2.2
+description Gateway to LAN_2
+encapsulation dot1Q 2
+ip address 10.10.2.1 255.255.255.0
+ip nat inside
+ip ospf 10 area 0
+no shutdown
+interface Ethernet0/3
+description Link to Internet
+ip address dhcp
+ip nat outside
+no shutdown
+exit
+ip nat inside source list 1 interface Ethernet0/3 overload
+ip route 0.0.0.0 0.0.0.0 dhcp
+ip access-list standard 1
+10 permit 10.10.2.0 0.0.0.255
+20 permit 10.1.1.4 0.0.0.3
+30 permit 10.1.1.8 0.0.0.3
+40 permit 10.10.1.0 0.0.0.255
+50 permit 10.10.3.0 0.0.0.255
+exit
+ip dhcp excluded-address 10.10.2.1
+ip dhcp excluded-address 10.10.1.1
+ip dhcp excluded-address 10.10.1.253 10.10.1.254
+ip dhcp pool Pool_2
+network 10.10.2.0 255.255.255.0
+default-router 10.10.2.1 
+dns-server 8.8.8.8 
+lease 0 12
+exit
+ip dhcp pool Pool_1
+network 10.10.1.0 255.255.255.0
+default-router 10.10.1.1 255.255.255.0 
+dns-server 8.8.8.8 
+lease 0 12
+exit
+router ospf 10
+router-id 2.2.2.2
+default-information originate
+exit
+do copy running-config startup-config

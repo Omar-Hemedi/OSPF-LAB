@@ -1,0 +1,46 @@
+enable
+configure terminal
+hostname R1
+line console 0
+password admin
+login
+exit
+enable secret admin
+service password-encryption
+no ip domain lookup
+ip domain name ospf.local
+username admin secret admin
+crypto key generate rsa
+2048
+line vty 0 4
+transport input ssh
+login local
+exit
+interface Ethernet0/0
+description Link to R2
+ip address 10.1.1.5 255.255.255.252
+ip ospf 10 area 0
+no shutdown
+interface Ethernet0/1
+description Link to R3
+ip address 10.1.1.14 255.255.255.252
+ip ospf 10 area 0
+no shutdown
+interface Ethernet0/2
+description Link to SW1
+no ip address
+no shutdown
+interface Ethernet0/2.11
+description Link to SW1
+encapsulation dot1Q 11
+ip address 10.10.1.1 255.255.255.0
+ip helper-address 10.1.1.6
+ip ospf 10 area 0
+no shutdown
+interface Ethernet0/3
+no ip address
+shutdown
+router ospf 10
+router-id 1.1.1.1
+exit
+do copy running-config startup-config
